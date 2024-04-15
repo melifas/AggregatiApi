@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AggregatiApi", "AggregatiApi\AggregatiApi.csproj", "{9DD649B4-4112-4644-B014-B8599E146365}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AggregationApi", "AggregatiApi\AggregationApi.csproj", "{9DD649B4-4112-4644-B014-B8599E146365}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

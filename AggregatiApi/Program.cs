@@ -1,3 +1,7 @@
+using System.Net.Http.Headers;
+using AggregationApi.Interfaces;
+using Refit;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +10,19 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services
+	.AddRefitClient<IRefitOpenWeatherClient>(new RefitSettings())
+	.ConfigureHttpClient(c => c.BaseAddress = new Uri("https://api.openweathermap.org"));
+
+builder.Services
+	.AddRefitClient<IRefitNewsApiClient>(new RefitSettings())
+	.ConfigureHttpClient(c =>
+	{
+		c.BaseAddress = new Uri("https://newsapi.org/v2");
+		c.DefaultRequestHeaders.Add("User-Agent", "Refit");
+	});
 
 var app = builder.Build();
 
