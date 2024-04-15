@@ -29,6 +29,14 @@ builder.Services
 		c.DefaultRequestHeaders.Add("User-Agent", "Refit");
 	});
 
+builder.Services
+	.AddRefitClient<IRefitRandomUsersClient>(new RefitSettings())
+	.ConfigureHttpClient(c =>
+	{
+		c.BaseAddress = new Uri(configuration[Constants.RandomUserBaseUrl]);
+		c.DefaultRequestHeaders.Add("User-Agent", "Refit");
+	});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

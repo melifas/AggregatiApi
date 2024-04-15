@@ -1,5 +1,8 @@
 ﻿using AggregationApi.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.Design;
+using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,6 +23,11 @@ namespace AggregationApi.Controllers
 		private readonly IRefitNewsApiClient _newsApiClient;
 
 		/// <summary>
+		/// The <see cref="IRefitRandomUsersClient"/>.
+		/// </summary>
+		private readonly IRefitRandomUsersClient _usersClient;
+
+		/// <summary>
 		/// The <see cref="IConfiguration"/>.
 		/// </summary>
 		private readonly IConfiguration _config;
@@ -27,15 +35,24 @@ namespace AggregationApi.Controllers
 		/// <summary>
 		/// Initializes a new instance of the <see cref="AggregateController"/> class.
 		/// </summary>
-		public AggregateController(IRefitOpenWeatherClient refitOpenWeatherClient, IRefitNewsApiClient newsApiClient, IConfiguration config)
+		public AggregateController(
+			IRefitOpenWeatherClient refitOpenWeatherClient,
+			IRefitNewsApiClient newsApiClient,
+			IRefitRandomUsersClient usersClient,
+			IConfiguration config
+			)
 		{
 			_refitOpenWeatherClient = refitOpenWeatherClient;
 			_newsApiClient = newsApiClient;
+			_usersClient = usersClient;
 			_config = config;
 		}
 
 		// GET: api/<Aggregate>
 		[HttpGet("forecast", Name = nameof(GetOpenWeatherMapForecast))]
+		[SwaggerResponse(StatusCodes.Status404NotFound)]
+		[SwaggerResponse(StatusCodes.Status400BadRequest)]
+		[SwaggerResponse(StatusCodes.Status500InternalServerError)]
 		public async Task<IActionResult> GetOpenWeatherMapForecast()
 		{
 			try
@@ -49,8 +66,21 @@ namespace AggregationApi.Controllers
 			}
 			catch (Refit.ApiException ae)
 			{
-				Console.WriteLine(ae);
-				throw;
+				switch (ae.StatusCode)
+				{
+					case HttpStatusCode.NotFound:
+						return NotFound(ae.Message);
+					case HttpStatusCode.BadRequest:
+						return BadRequest(ae.Message);
+					default:
+						return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
+					
+				}
+			}
+			catch (Exception e)
+			{
+
+				return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
 			}
 		}
 
@@ -67,8 +97,51 @@ namespace AggregationApi.Controllers
 			}
 			catch (Refit.ApiException ae)
 			{
-				Console.WriteLine(ae);
-				throw;
+				switch (ae.StatusCode)
+				{
+					case HttpStatusCode.NotFound:
+						return NotFound(ae.Message);
+					case HttpStatusCode.BadRequest:
+						return BadRequest(ae.Message);
+					default:
+						return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
+
+				}
+			}
+			catch (Exception e)
+			{
+
+				return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
+			}
+		}
+
+		[HttpGet("random", Name = nameof(GetRandomUsers))]
+		public async Task<IActionResult> GetRandomUsers()
+		{
+			try
+			{
+				
+				var newsResponse = await _usersClient.GetRandomUsers().ConfigureAwait(true);
+
+				return Ok(newsResponse);
+			}
+			catch (Refit.ApiException ae)
+			{
+				switch (ae.StatusCode)
+				{
+					case HttpStatusCode.NotFound:
+						return NotFound(ae.Message);
+					case HttpStatusCode.BadRequest:
+						return BadRequest(ae.Message);
+					default:
+						return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
+
+				}
+			}
+			catch (Exception e)
+			{
+
+				return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
 			}
 		}
 

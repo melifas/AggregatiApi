@@ -25,5 +25,15 @@
 		/// The News web base url key app setting key.
 		/// </summary>
 		public static readonly string NewsBaseUrl = "NewsBaseUrl";
+
+		/// <summary>
+		/// The Spotify web base url key app setting key.
+		/// </summary>
+		public static readonly string RandomUserBaseUrl = "RandomUserBaseUrl";
+
+		/// <summary>
+		/// The generic error message.
+		/// </summary>
+		public static readonly string GenericErrorMessage = "A server side error has occurred and has been successfully logged.";
 	}
 }
