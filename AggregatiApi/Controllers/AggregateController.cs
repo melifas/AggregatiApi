@@ -20,12 +20,18 @@ namespace AggregationApi.Controllers
 		private readonly IRefitNewsApiClient _newsApiClient;
 
 		/// <summary>
+		/// The <see cref="IConfiguration"/>.
+		/// </summary>
+		private readonly IConfiguration _config;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="AggregateController"/> class.
 		/// </summary>
-		public AggregateController(IRefitOpenWeatherClient refitOpenWeatherClient, IRefitNewsApiClient newsApiClient)
+		public AggregateController(IRefitOpenWeatherClient refitOpenWeatherClient, IRefitNewsApiClient newsApiClient, IConfiguration config)
 		{
 			_refitOpenWeatherClient = refitOpenWeatherClient;
 			_newsApiClient = newsApiClient;
+			_config = config;
 		}
 
 		// GET: api/<Aggregate>
@@ -34,9 +40,12 @@ namespace AggregationApi.Controllers
 		{
 			try
 			{
-				var t = await _refitOpenWeatherClient.GetForecast("44.34", "10.99", "aa7bdb936df9a0a89004d7a6784c1794")
-					.ConfigureAwait(true);
-				return Ok(t);
+
+				var apiKey = _config[Constants.WeatherForecastApiKey]??"";
+
+				var weatherResponse = await _refitOpenWeatherClient.GetForecast("44.34", "10.99", apiKey).ConfigureAwait(true);
+
+				return Ok(weatherResponse);
 			}
 			catch (Refit.ApiException ae)
 			{
@@ -50,9 +59,11 @@ namespace AggregationApi.Controllers
 		{
 			try
 			{
-				var t = await _newsApiClient.GetNewsHeadLines("us", "e6f98768db344326914f9df67b762de9")
-					.ConfigureAwait(true);
-				return Ok(t);
+				var apiKey = _config[Constants.NewsApiKey] ?? "";
+
+				var newsResponse = await _newsApiClient.GetNewsHeadLines("us", apiKey).ConfigureAwait(true);
+
+				return Ok(newsResponse);
 			}
 			catch (Refit.ApiException ae)
 			{

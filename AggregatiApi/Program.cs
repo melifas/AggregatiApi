@@ -1,8 +1,13 @@
 using System.Net.Http.Headers;
+using AggregationApi;
 using AggregationApi.Interfaces;
 using Refit;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+ConfigurationManager configuration = builder.Configuration;
 
 // Add services to the container.
 
@@ -14,13 +19,13 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
 	.AddRefitClient<IRefitOpenWeatherClient>(new RefitSettings())
-	.ConfigureHttpClient(c => c.BaseAddress = new Uri("https://api.openweathermap.org"));
+	.ConfigureHttpClient(c => c.BaseAddress = new Uri(configuration[Constants.WeatherForecastBaseUrl]));
 
 builder.Services
 	.AddRefitClient<IRefitNewsApiClient>(new RefitSettings())
 	.ConfigureHttpClient(c =>
 	{
-		c.BaseAddress = new Uri("https://newsapi.org/v2");
+		c.BaseAddress = new Uri(configuration[Constants.NewsBaseUrl]);
 		c.DefaultRequestHeaders.Add("User-Agent", "Refit");
 	});
 
