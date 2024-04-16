@@ -8,13 +8,16 @@ namespace AggregationApi.Enums
 	public enum EnumFilterDataBy
 	{
 		/// <summary>
-		/// The aggregate data title.
+		/// The Us filter.
 		/// </summary>
-		Title = 0,
+		[Description("United States")]
+		us = 0,
 
 		/// <summary>
-		/// The aggregate data temperature.
+		/// The Italy filter.
 		/// </summary>
-		Temperature = 1
+		[Description("Italy")]
+		it = 1
+
 	}
 }

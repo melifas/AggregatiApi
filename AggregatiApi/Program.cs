@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using AggregationApi;
 using AggregationApi.Clients;
@@ -18,7 +19,14 @@ ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+	// Set the comments path for the Swagger JSON and UI.
+	var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+	var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+	c.IncludeXmlComments(xmlPath);
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -45,14 +53,14 @@ IAsyncPolicy<HttpResponseMessage> fallbackPolicy =
 		.FallbackAsync(FallbackAction, OnFallbackAsync);
 
 
- Task OnFallbackAsync(DelegateResult<HttpResponseMessage> response, Context context)
+Task OnFallbackAsync(DelegateResult<HttpResponseMessage> response, Context context)
 {
 
 	//This is a good place to do some logging
 	return Task.CompletedTask;
 }
 
- Task<HttpResponseMessage> FallbackAction(DelegateResult<HttpResponseMessage> responseToFailedRequest, Context context, CancellationToken cancellationToken)
+Task<HttpResponseMessage> FallbackAction(DelegateResult<HttpResponseMessage> responseToFailedRequest, Context context, CancellationToken cancellationToken)
 {
 
 	HttpResponseMessage httpResponseMessage = new HttpResponseMessage(responseToFailedRequest.Result.StatusCode)
@@ -62,7 +70,7 @@ IAsyncPolicy<HttpResponseMessage> fallbackPolicy =
 	return Task.FromResult(httpResponseMessage);
 }
 
- IAsyncPolicy<HttpResponseMessage> wrapOfRetryAndFallback = Policy.WrapAsync(fallbackPolicy, httpWaitAndRetryPolicy);
+IAsyncPolicy<HttpResponseMessage> wrapOfRetryAndFallback = Policy.WrapAsync(fallbackPolicy, httpWaitAndRetryPolicy);
 
 
 builder.Services

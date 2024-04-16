@@ -2,6 +2,9 @@
 using AggregationApi.Enums;
 using AggregationApi.Interfaces;
 using AggregationApi.Models;
+using AggregationApi.Models.Users;
+using System.Linq;
+using AggregationApi.Models.NewsWeather;
 
 namespace AggregationApi.Services
 {
@@ -53,31 +56,26 @@ namespace AggregationApi.Services
 		public async Task<AggregatedDataResultsInfo> GetAggregateData(EnumFilterDataBy filterBy, bool sortAsc)
 		{
 
-			try
+
+			var weatherResponse = _refitOpenWeatherClient.GetForecast("44.34", "10.99",
+				_config[Constants.WeatherForecastApiKey] ?? "");
+
+			var newsResponse = _newsApiClient.GetNewsHeadLines(filterBy.ToString(), _config[Constants.NewsApiKey] ?? "");
+
+			var randomResponse = _usersClient.GetRandomUsers();
+
+			await Task.WhenAll(weatherResponse, newsResponse, randomResponse);
+
+			List<Article> ordered = !sortAsc ? newsResponse.Result.Articles.OrderByDescending(c=>c.Title).ToList() : newsResponse.Result.Articles.OrderBy(c => c.Title).ToList();
+
+			var results = new AggregatedDataResultsInfo
 			{
-				var weatherResponse = _refitOpenWeatherClient.GetForecast("44.34", "10.99",
-					_config[Constants.WeatherForecastApiKey] ?? "");
+				Temp = weatherResponse.Result.Main.Temp,
+				Articles = ordered,
+				UsersResponseInfos = randomResponse.Result.Select(c=>new UsersResponseInfo{Body = c.Body, Title = c.Title}).ToList()
+			};
 
-				var newsResponse = _newsApiClient.GetNewsHeadLines("us", _config[Constants.NewsApiKey] ?? "");
-
-				var randomResponse = _usersClient.GetRandomUsers();
-
-				await Task.WhenAll(weatherResponse, newsResponse, randomResponse);
-
-				var results = new AggregatedDataResultsInfo
-				{
-					Temp = weatherResponse.Result.Main.Temp
-				};
-
-				return results;
-
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-
-			return null;
+			return results;
 
 		}
 	}

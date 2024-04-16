@@ -36,15 +36,15 @@ namespace AggregationApi.Controllers
 		/// <summary>
 		/// Gets the aggregate data.
 		/// </summary>
-		/// <param name="filterBy"> filter data by Title or DateCreated (optional, defaults to Title). </param>
-		/// <param name="sortAsc"> True to sort ascending otherwise descending (optional, defaults to true). </param>
+		/// <param name="filterBy"> filter data by Country (optional, defaults to United States). </param>
+		/// <param name="sortAsc"> True to sort ascending by Article Title otherwise descending (optional, defaults to true). </param>
 		[HttpGet("aggregate", Name = nameof(GetAggregateApis))]
 		[SwaggerResponse(StatusCodes.Status200OK, "Aggregate data fetched successfully!", typeof(AggregatedDataResultsInfo))]
 		[SwaggerResponse(StatusCodes.Status404NotFound)]
 		[SwaggerResponse(StatusCodes.Status400BadRequest)]
 		[SwaggerResponse(StatusCodes.Status500InternalServerError)]
 		public async Task<IActionResult> GetAggregateApis(
-			[EnumDataType(typeof(EnumFilterDataBy))] EnumFilterDataBy filterBy = EnumFilterDataBy.Title,
+			[EnumDataType(typeof(EnumFilterDataBy))] EnumFilterDataBy filterBy = EnumFilterDataBy.us,
 			bool sortAsc = true)
 		{
 			try
