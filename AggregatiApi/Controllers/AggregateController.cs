@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.Design;
 using System.Net;
+using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -47,6 +48,58 @@ namespace AggregationApi.Controllers
 			_usersClient = usersClient;
 			_config = config;
 		}
+
+
+		// GET: api/<Aggregate>
+		[HttpGet("aggregate", Name = nameof(GetAggregateApis))]
+		[SwaggerResponse(StatusCodes.Status404NotFound)]
+		[SwaggerResponse(StatusCodes.Status400BadRequest)]
+		[SwaggerResponse(StatusCodes.Status500InternalServerError)]
+		public async Task<IActionResult> GetAggregateApis()
+		{
+			try
+			{
+
+
+
+				//var weatherResponse = await _refitOpenWeatherClient.GetForecast("44.34", "10.99", _config[Constants.WeatherForecastApiKey] ?? "").ConfigureAwait(true);
+
+				//var newsResponse = await _newsApiClient.GetNewsHeadLines("us", _config[Constants.NewsApiKey] ?? "").ConfigureAwait(true);
+
+				//var randomResponse = await _usersClient.GetRandomUsers().ConfigureAwait(true);
+
+				//await Task.WhenAll(weatherResponse, newsResponse);
+
+				var weatherResponse = _refitOpenWeatherClient.GetForecast("44.34", "10.99", _config[Constants.WeatherForecastApiKey] ?? "");
+
+				var newsResponse = _newsApiClient.GetNewsHeadLines("us", _config[Constants.NewsApiKey] ?? "");
+
+				var randomResponse = _usersClient.GetRandomUsers();
+
+				await Task.WhenAll(weatherResponse, newsResponse, randomResponse);
+
+				return Ok(weatherResponse);
+			}
+			catch (Refit.ApiException ae)
+			{
+				switch (ae.StatusCode)
+				{
+					case HttpStatusCode.NotFound:
+						return NotFound(ae.Message);
+					case HttpStatusCode.BadRequest:
+						return BadRequest(ae.Message);
+					default:
+						return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
+
+				}
+			}
+			catch (Exception e)
+			{
+				//logging here....
+				return StatusCode(StatusCodes.Status500InternalServerError, Constants.GenericErrorMessage);
+			}
+		}
+
 
 		// GET: api/<Aggregate>
 		[HttpGet("forecast", Name = nameof(GetOpenWeatherMapForecast))]
@@ -121,9 +174,9 @@ namespace AggregationApi.Controllers
 			try
 			{
 				
-				var newsResponse = await _usersClient.GetRandomUsers().ConfigureAwait(true);
+				var randomResponse = await _usersClient.GetRandomUsers().ConfigureAwait(true);
 
-				return Ok(newsResponse);
+				return Ok(randomResponse);
 			}
 			catch (Refit.ApiException ae)
 			{
