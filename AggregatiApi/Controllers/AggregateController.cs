@@ -26,8 +26,7 @@ namespace AggregationApi.Controllers
 		/// Initializes a new instance of the <see cref="AggregateController"/> class.
 		/// </summary>
 		public AggregateController(
-			IAggregateDataService aggregateDataService
-			)
+			IAggregateDataService aggregateDataService)
 		{
 			_aggregateDataService = aggregateDataService;
 		}
