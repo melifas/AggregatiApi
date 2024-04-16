@@ -5,6 +5,8 @@ using AggregationApi.Models;
 using AggregationApi.Models.Users;
 using System.Linq;
 using AggregationApi.Models.NewsWeather;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace AggregationApi.Services
 {
@@ -29,6 +31,11 @@ namespace AggregationApi.Services
 		private readonly IRefitRandomUsersClient _usersClient;
 
 		/// <summary>
+		/// The <see cref="IDistributedCache"/>.
+		/// </summary>
+		private readonly IDistributedCache _cache;
+
+		/// <summary>
 		/// The <see cref="IConfiguration"/>.
 		/// </summary>
 		private readonly IConfiguration _config;
@@ -39,22 +46,37 @@ namespace AggregationApi.Services
 		/// <param name="refitOpenWeatherClient"> The <see cref="IRefitOpenWeatherClient"/>. </param>
 		/// <param name="newsApiClient"> The <see cref="IRefitNewsApiClient"/>. </param>
 		/// <param name="usersClient"> The <see cref="IRefitRandomUsersClient"/>. </param>
+		/// <param name="cache"> The <see cref="IDistributedCache"/>. </param>
 		/// <param name="config"></param>
 		public AggregateDataService(
 			IRefitOpenWeatherClient refitOpenWeatherClient,
 			IRefitNewsApiClient newsApiClient,
 			IRefitRandomUsersClient usersClient,
+			IDistributedCache cache,
 			IConfiguration config)
 		{
 			_refitOpenWeatherClient = refitOpenWeatherClient;
 			_newsApiClient = newsApiClient;
 			_usersClient = usersClient;
+			_cache = cache;
 			_config = config;
 		}
 
 		/// <inheritdoc/>
 		public async Task<AggregatedDataResultsInfo> GetAggregateData(EnumFilterDataBy filterBy, bool sortAsc)
 		{
+
+			var cacheKey = $"AggregateData-{filterBy}-{sortAsc}";
+
+			var cachedResultsJson = await _cache.GetStringAsync(cacheKey);
+
+			if (cachedResultsJson != null)
+			{
+				// If the data is in the cache, deserialize it and return it
+				var cachedResults = JsonSerializer.Deserialize<AggregatedDataResultsInfo>(cachedResultsJson);
+
+				return cachedResults;
+			}
 
 
 			var weatherResponse = _refitOpenWeatherClient.GetForecast("44.34", "10.99",
@@ -74,6 +96,9 @@ namespace AggregationApi.Services
 				Articles = ordered,
 				UsersResponseInfos = randomResponse.Result.Select(c=>new UsersResponseInfo{Body = c.Body, Title = c.Title}).ToList()
 			};
+
+			var resultsJson = JsonSerializer.Serialize(results);
+			await _cache.SetStringAsync(cacheKey, resultsJson);
 
 			return results;
 

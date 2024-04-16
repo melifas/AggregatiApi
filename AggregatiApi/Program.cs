@@ -19,6 +19,7 @@ ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSwaggerGen(c =>
 {
 	// Set the comments path for the Swagger JSON and UI.
