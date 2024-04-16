@@ -1,6 +1,9 @@
 using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 using AggregationApi;
+using AggregationApi.Clients;
 using AggregationApi.Interfaces;
+using AggregationApi.Services;
 using Polly;
 using Refit;
 
@@ -17,7 +20,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+{
+	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+
+builder.Services.AddScoped<IAggregateDataService, AggregateDataService>();
 
 
 IAsyncPolicy<HttpResponseMessage> httpWaitAndRetryPolicy =
